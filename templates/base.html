@@ -8,6 +8,8 @@
     <title>{% block title %}Рецепты{% endblock %} | Продуктовый помощник</title>
     <!-- Загрузка статики -->
     {% load static %}
+    {% block css %}
+    {% endblock %}
     </head>
     <body>
         {% include 'include/nav.html' %}
