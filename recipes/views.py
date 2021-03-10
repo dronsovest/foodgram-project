@@ -19,13 +19,16 @@ def index(request):
 def recipe_view(request, slug):
     recipe = get_object_or_404(Recipe, slug=slug)
     ingredients = Ingredient.objects.filter(ingredient__recipe=recipe)
-    context = {}
-    context["recipe"] = recipe
-    context["ingredients"] = ingredients
+    tags = list(Tag.objects.filter(tag__recipe=recipe))
+    ing_vol = []
     for ingredient in ingredients:
-        ing_volume = get_object_or_404(RecipeIngredients, ingredient=ingredient)
-        context[ingredient.title] = ing_volume.volume
-    return render(request, "recipe.html", context)
+        volume = get_object_or_404(RecipeIngredients, ingredient=ingredient)
+        ing_vol.append((ingredient, volume.volume))
+    return render(request, "recipe.html", {
+        "recipe": recipe,
+        "ing_vol": ing_vol,
+        "tags": tags
+    })
 
 
 def recipe_add(request):
@@ -36,15 +39,15 @@ def recipe_add(request):
             "form": form,
             "edit": edit,
         })
-    form = PostForm(request.POST, files=request.FILES)
+    form = RecipeForm(request.POST, files=request.FILES)
     if not form.is_valid():
         return render(request, "new.html", {
             "form": form,
             "edit": edit,
         })
-    post_get = form.save(commit=False)
-    post_get.author = request.user
-    post_get.save()
+    recipe_get = form.save(commit=False)
+    recipe_get.author = request.user
+    recipe_get.save()
     return redirect("/")
 
 def recipe_edit(request, slug):
