@@ -30,7 +30,7 @@ def recipe_view(request, slug):
         "tags": tags
     })
 
-
+@login_required
 def recipe_add(request):
     form = RecipeForm()
     edit = False
@@ -50,6 +50,7 @@ def recipe_add(request):
     recipe_get.save()
     return redirect("/")
 
+@login_required
 def recipe_edit(request, slug):
     pass
 
