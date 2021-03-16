@@ -11,9 +11,11 @@ def index(request):
     paginator = Paginator(recipes, 6)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
+    title = "Рецепты"
     return render(request, "index.html", {
         "page": page,
         "paginator": paginator,
+        "title": title,
     })
 
 def recipe_view(request, slug):
