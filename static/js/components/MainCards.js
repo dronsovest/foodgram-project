@@ -8,6 +8,7 @@ class MainCards {
         this.button = button;
         this._eventUserAuth = this._eventUserAuth.bind(this);
         this._eventUserNotAuth = this._eventUserNotAuth.bind(this);
+        console.log("Чо хочу")
 
     }
     addEvent() {

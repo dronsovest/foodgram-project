@@ -8,7 +8,11 @@ from .forms import RecipeForm
 
 def index(request):
     recipes = Recipe.objects.all()
-    paginator = Paginator(recipes, 6)
+    recipes_tags = []
+    for recipe in recipes:
+        tags = list(Tag.objects.filter(tag__recipe=recipe))
+        recipes_tags.append((recipe, tags))
+    paginator = Paginator(recipes_tags, 6)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     title = "Рецепты"
@@ -36,16 +40,19 @@ def recipe_view(request, slug):
 def recipe_add(request):
     form = RecipeForm()
     edit = False
+    title = "Создание рецепта"
     if not request.method == "POST":
         return render(request, "new.html", {
             "form": form,
             "edit": edit,
+            "title": title,
         })
     form = RecipeForm(request.POST, files=request.FILES)
     if not form.is_valid():
         return render(request, "new.html", {
             "form": form,
             "edit": edit,
+            "title": title,
         })
     recipe_get = form.save(commit=False)
     recipe_get.author = request.user
