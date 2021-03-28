@@ -26,8 +26,8 @@
         </ul>
     </div>
     <div class="card-list">
-    {% for recipe, tags in page%}
-    <div class="card" data-id="120">
+    {% for recipe, tags, is_favorites in page%}
+    <div class="card" data-id="{{ recipe.pk }}">
         <a href="/recipe/{{ recipe.slug }}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Посмотреть рецепт" class="card__image"></a>
         <div class="card__body">
             <a class="card__title link" href="/recipe/{{ recipe.slug }}" target="_blank">{{ recipe.title }}</a>
@@ -44,8 +44,9 @@
             </div>
         </div>
         <div class="card__footer">
-            <button class="button button_style_light-blue" name="purchases" data-out><span class="icon-plus button__icon"></span>Добавить в покупки</button>
-            <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
+            {% csrf_token %}
+            <button class="button button_style_light-blue" name="purchases" data-out ><span class="icon-plus button__icon"></span>Добавить в покупки</button>
+            <button class="button button_style_none" name="favorites" {% if not is_favorites %} data-out {% endif %}><span class="icon-favorite {% if is_favorites %} icon-favorite_active {% endif %}"></span></button>
         </div>
     </div>
     

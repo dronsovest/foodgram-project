@@ -4,15 +4,18 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Recipe, Tag, Ingredient, RecipeIngredients
 from .forms import RecipeForm
+from favorites.models import Favorites
 
 
 def index(request):
     recipes = Recipe.objects.all()
     recipes_tags = []
+    is_favorites = False
     for recipe in recipes:
         tags = list(Tag.objects.filter(tag__recipe=recipe))
-        recipes_tags.append((recipe, tags))
-    paginator = Paginator(recipes_tags, 6)
+        is_favorites = Favorites.objects.filter(recipe=recipe, user=request.user).exists()
+        recipes_tags.append((recipe, tags, is_favorites))
+        paginator = Paginator(recipes_tags, 6)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     title = "Рецепты"
@@ -27,13 +30,15 @@ def recipe_view(request, slug):
     ingredients = Ingredient.objects.filter(ingredient__recipe=recipe)
     tags = list(Tag.objects.filter(tag__recipe=recipe))
     ing_vol = []
+    is_favorites = Favorites.objects.filter(recipe=recipe, user=request.user).exists()
     for ingredient in ingredients:
         volume = get_object_or_404(RecipeIngredients, ingredient=ingredient)
         ing_vol.append((ingredient, volume.volume))
     return render(request, "recipe.html", {
         "recipe": recipe,
         "ing_vol": ing_vol,
-        "tags": tags
+        "tags": tags,
+        "is_favorites": is_favorites
     })
 
 @login_required
