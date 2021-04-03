@@ -4,7 +4,7 @@
             <ul class="nav__items list">
                 <li class="nav__item {% if title == 'Рецепты' %} nav__item_active{% endif %}"><a href="/" class="nav__link link">Рецепты</a></li>
                 {% if user.is_authenticated %}
-                <li class="nav__item {% if title == 'Подписки' %} nav__item_active{% endif %}"><a href="/followings" class="nav__link link">Мои подписки</a></li>
+                <li class="nav__item {% if title == 'Мои подписки' %} nav__item_active{% endif %}"><a href="/followings" class="nav__link link">Мои подписки</a></li>
                 <li class="nav__item {% if title == 'Создание рецепта' %} nav__item_active{% endif %}"><a href="/recipe-add" class="nav__link link">Создать рецепт</a></li>
                 <li class="nav__item {% if title == 'Избранное' %} nav__item_active{% endif %}"><a href="/favorites" class="nav__link link">Избранное</a></li>
                 {% endif %}

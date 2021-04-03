@@ -48,7 +48,7 @@ class Api {
       })
   }
   addSubscriptions(id) {
-    return fetch(`/subscriptions`, {
+    return fetch(`/followings/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ class Api {
       })
   }
   removeSubscriptions (id) {
-    return fetch(`/subscriptions/${id}`, {
+    return fetch(`/followings/remove/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

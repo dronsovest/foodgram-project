@@ -25,8 +25,16 @@
             </li>
         </ul>
     </div>
+    {% if "users" in request.path %}
+    <div class="author-subscribe" data-author="{{ title }}">
+        {% if request.user.is_authenticated %}
+        {% csrf_token %}
+        <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></p>
+        {% endif %}
+    </div>
+    {% endif %}
     <div class="card-list">
-    {% for recipe, tags, is_favorites in page%}
+    {% for recipe, tags, is_favorites in page %}
     <div class="card" data-id="{{ recipe.pk }}">
         <a href="/recipe/{{ recipe.slug }}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Посмотреть рецепт" class="card__image"></a>
         <div class="card__body">
@@ -40,14 +48,17 @@
             </ul>
             <div class="card__items card__items_column">
                 <p class="card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} </p>
-                <p class="card__text"><span class="icon-user"></span> <a href="users/{{ recipe.author.username}}" style="color: black">{{ recipe.author }}</a></p>
+                <p class="card__text"><span class="icon-user"></span> <a href="/users/{{ recipe.author.username}}" style="color: black">{{ recipe.author }}</a></p>
             </div>
         </div>
         <div class="card__footer">
+            {% if request.user.is_authenticated %}
             {% csrf_token %}
             <button class="button button_style_light-blue" name="purchases" data-out ><span class="icon-plus button__icon"></span>Добавить в покупки</button>
             <button class="button button_style_none" name="favorites" {% if not is_favorites %} data-out {% endif %}><span class="icon-favorite {% if is_favorites %} icon-favorite_active {% endif %}"></span></button>
+            {% endif %}
         </div>
+        
     </div>
     
     {% endfor %}
@@ -65,14 +76,22 @@
 <script src="{% static 'js/components/MainCards.js' %}"></script> 
 
 <script src="{% static 'js/components/Purchases.js' %}"></script> 
-<script src="{% static 'js/components/Favorites.js' %}"></script> 
+<script src="{% static 'js/components/Favorites.js' %}"></script>
+{% if "users" in request.path %}
+<script src="{% static 'js/components/Subscribe.js' %}"></script>
+{% endif %}
 
 <script src="{% static 'js/config/config.js' %}"></script> 
 <script src="{% static 'js/components/CardList.js' %}"></script> 
-<script src="{% static 'js/components/Header.js' %}"></script> 
+<script src="{% static 'js/components/Header.js' %}"></script>
+<script src="{% static 'js/components/AuthorRecipe.js' %}"></script> 
 
 <script src="{% static 'js/api/Api.js' %}"></script> 
-<script src="{% static 'js/indexAuth.js' %}"></script> 
+{% if "users" in request.path %}
+<script src="{% static 'js/authorRecipe.js' %}"></script>
+{% else %}
+<script src="{% static 'js/indexAuth.js' %}"></script>
+{% endif %}
 
 {% endblock %}
   
