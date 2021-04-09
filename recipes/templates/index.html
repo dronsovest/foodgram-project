@@ -29,12 +29,18 @@
     <div class="author-subscribe" data-author="{{ title }}">
         {% if request.user.is_authenticated %}
         {% csrf_token %}
-        <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></p>
+        <p style="padding: 0 0 2em 0;">
+            {% if is_follow %}
+            <button class="button button_style_light-blue button_size_subscribe" name="subscribe">Отписаться от автора</button>
+            {% else %}
+            <button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button>
+            {% endif %}
+        </p>
         {% endif %}
-    </div>
+        </div>
     {% endif %}
     <div class="card-list">
-    {% for recipe, tags, is_favorites in page %}
+    {% for recipe, tags, is_favorites, is_purchase in page %}
     <div class="card" data-id="{{ recipe.pk }}">
         <a href="/recipe/{{ recipe.slug }}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Посмотреть рецепт" class="card__image"></a>
         <div class="card__body">
@@ -54,7 +60,11 @@
         <div class="card__footer">
             {% if request.user.is_authenticated %}
             {% csrf_token %}
+            {% if not is_purchase %}
             <button class="button button_style_light-blue" name="purchases" data-out ><span class="icon-plus button__icon"></span>Добавить в покупки</button>
+            {% else %}
+            <button class="button button_style_light-blue-outline" name="purchases"><span class="icon-check button__icon"></span>Рецепт добавлен</button>
+            {% endif %}
             <button class="button button_style_none" name="favorites" {% if not is_favorites %} data-out {% endif %}><span class="icon-favorite {% if is_favorites %} icon-favorite_active {% endif %}"></span></button>
             {% endif %}
         </div>

@@ -4,7 +4,7 @@
 
 {% load static %}
 {% block css %}
-    <link rel="stylesheet" href="{% static 'pages/index.css' %}" />
+    <link rel="stylesheet" href="{% static 'pages/myFollow.css' %}" />
 {% endblock %}
 
 <main class="main container">
@@ -14,7 +14,7 @@
     
     <div class="card-list">
         {% for author, recipes, recipes_counter in page %}
-        <div class="card-user" data-author="700">
+        <div class="card-user" data-author="{{ author }}">
         <div class="card-user__header">
             <h2 class="card-user__title">{{author}}</h2>
         </div>
@@ -31,11 +31,12 @@
                 {% endfor %}
                 
                 <li class="card-user__item">
-                    <a href="/users/{{ author.username}}" class="card-user__link link">Еще {{ recipes_counter }} рецептов...</a>
+                    <a href="/users/{{ author.username}}" class="card-user__link link">{{ recipes_counter }}</a>
                 </li>
             </ul>
         </div>
         <div class="card-user__footer">
+            {% csrf_token %}
             <button class="button button_style_light-blue button_size_auto" name="subscribe">Отписаться</button>
         </div>
         </div>

@@ -9,6 +9,7 @@ class RecipeForm(forms.ModelForm):
         to_field_name='slug',
         required=False
     )
+    
     class Meta:
         model = Recipe
         fields = ('title', 'tags', 'cooking_time', 'description',

@@ -17,10 +17,11 @@ class Api {
       })
   }
   addPurchases (id) {
-    return fetch(`/purchases`, {
+    return fetch(`/shopping-list/add/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
       },
       body: JSON.stringify({
         id: id
@@ -34,10 +35,11 @@ class Api {
       })
   }
   removePurchases (id){
-    return fetch(`/purchases/${id}`, {
+    return fetch(`/shopping-list/delete/${id}/`, {
       method: 'DELETE',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
       }
     })
       .then( e => {
@@ -48,7 +50,7 @@ class Api {
       })
   }
   addSubscriptions(id) {
-    return fetch(`/followings/add`, {
+    return fetch(`/followings/add/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -66,7 +68,7 @@ class Api {
       })
   }
   removeSubscriptions (id) {
-    return fetch(`/followings/remove/${id}`, {
+    return fetch(`/followings/remove/${id}/`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
