@@ -5,6 +5,7 @@ from .models import Recipe, Ingredient, Tag, RecipeIngredients, TagsRecipe
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ("pk", "title", "pub_date", "author")
+    prepopulated_fields = {"slug": ("title",)}
     search_fields = ("title", "author")
     list_filter = ("pub_date",)
     empty_value_display = "-пусто-"

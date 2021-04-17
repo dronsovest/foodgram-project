@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 
@@ -41,10 +41,16 @@ def shopping_list_download(request):
     purchase_ingreditnts = RecipeIngredients.objects.filter(
         recipe__recipe_shl__user=request.user
     )
-    content = ""
+    precontent = {}
     for item in purchase_ingreditnts:
         ingredient = Ingredient.objects.get(title=item.ingredient.title)
-        content += "{} ({}) - {}\n".format(item.ingredient.title, ingredient.unit, item.volume)
+        if item.ingredient.title in precontent:
+            precontent[item.ingredient.title][1] += item.volume
+        else:
+            precontent[item.ingredient.title] = [ingredient.unit, item.volume]
+    content = ""
+    for key, value in precontent.items():
+        content += "{} ({}) - {}\n".format(key, value[0], value[1])
     filename = "purchase.txt"
     response = HttpResponse(content, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)

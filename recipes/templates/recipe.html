@@ -23,16 +23,16 @@
             </div>
             <ul class="single-card__items">
                 {% for tag in tags %}
-                    {% if tag.title == "Обед" %}<li class="card__item"><span class="badge badge_style_green">Обед</span></li>{% endif %}
-                    {% if tag.title == "Завтрак" %}<li class="card__item"><span class="badge badge_style_orange">Завтрак</span></li>{% endif %}
-                    {% if tag.title == "Ужин" %}<li class="card__item"><span class="badge badge_style_purple">Ужин</span></li>{% endif %}
+                    {% if tag.title == "lunch" %}<li class="card__item"><span class="badge badge_style_green">Обед</span></li>{% endif %}
+                    {% if tag.title == "breakfast" %}<li class="card__item"><span class="badge badge_style_orange">Завтрак</span></li>{% endif %}
+                    {% if tag.title == "dinner" %}<li class="card__item"><span class="badge badge_style_purple">Ужин</span></li>{% endif %}
                 {% endfor %}
             </ul>
             <div class="single-card__items single-card__items_column">
-                <p class="single-card__text"><span class="icon-time"></span> {{ recipe.cooking_time }}</p>
+                <p class="single-card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин</p>
                 <ul class="single-card__items">
                     <li class="single-card__item"><p class="single-card__text"><span class="icon-user"></span> {{ recipe.author.username }}</p></li>
-                    <li class="single-card__item">  <a style="margin-left: 2.5em" href="recipe_edit/{{ recipe.slug }}" class="single-card__text">Редактировать рецепт</a></li>
+                    <li class="single-card__item">  <a style="margin-left: 2.5em" href="/recipe-edit/{{ recipe.slug }}" class="single-card__text">Редактировать рецепт</a></li>
                 </ul>
             </div>
             <ul class="single-card__items">

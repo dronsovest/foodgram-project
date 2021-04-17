@@ -10,4 +10,5 @@ urlpatterns = [
     path("recipe-edit/<slug>/", views.recipe_edit, name="recipe_edit"), 
     path("recipe-delete/<slug>/", views.recipe_delete, name="recipe_delete"),
     path("users/<username>", views.user_recipes , name="user_recipes"),
+    path("ingredients", views.ingredients_query, name="ingredients_query"),
 ]

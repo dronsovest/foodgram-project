@@ -19,7 +19,7 @@ class Recipe(models.Model):
         null=True,
         verbose_name="Изображение"
     )
-    cooking_time = models.DurationField()
+    cooking_time = models.IntegerField()
     pub_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

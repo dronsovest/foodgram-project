@@ -47,13 +47,13 @@
             <a class="card__title link" href="/recipe/{{ recipe.slug }}" target="_blank">{{ recipe.title }}</a>
             <ul class="card__items">
                 {% for tag in tags %}
-                    {% if tag.title == "Обед" %}<li class="card__item"><span class="badge badge_style_green">Обед</span></li>{% endif %}
-                    {% if tag.title == "Завтрак" %}<li class="card__item"><span class="badge badge_style_orange">Завтрак</span></li>{% endif %}
-                    {% if tag.title == "Ужин" %}<li class="card__item"><span class="badge badge_style_purple">Ужин</span></li>{% endif %}
+                    {% if tag.title == "lunch" %}<li class="card__item"><span class="badge badge_style_green">Обед</span></li>{% endif %}
+                    {% if tag.title == "breakfast" %}<li class="card__item"><span class="badge badge_style_orange">Завтрак</span></li>{% endif %}
+                    {% if tag.title == "dinner" %}<li class="card__item"><span class="badge badge_style_purple">Ужин</span></li>{% endif %}
                 {% endfor %}
             </ul>
             <div class="card__items card__items_column">
-                <p class="card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} </p>
+                <p class="card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин</p>
                 <p class="card__text"><span class="icon-user"></span> <a href="/users/{{ recipe.author.username}}" style="color: black">{{ recipe.author }}</a></p>
             </div>
         </div>
