@@ -39,6 +39,7 @@ def favorite_list(request):
         "purchase_count": purchase_count,
     })
 
+
 @login_required
 def favorites_add(request):
     request_body = json.loads(request.body)
@@ -47,8 +48,13 @@ def favorites_add(request):
     Favorites.objects.get_or_create(user=user_id, recipe=recipe_id)
     return JsonResponse({"success": True})
 
+
 @login_required
 def favorites_del(request, id):
-    favorites_recipe = get_object_or_404(Favorites, recipe=id, user=request.user)
+    favorites_recipe = get_object_or_404(
+        Favorites,
+        recipe=id,
+        user=request.user
+    )
     favorites_recipe.delete()
     return JsonResponse({"success": True})

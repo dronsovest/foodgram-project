@@ -27,15 +27,15 @@
                 <div class="form__field-group">
                     <div class="tags">
                         <div class="tags__item">
-                            <input type="checkbox" name="breakfast" id="id_breakfast" class="tags__checkbox tags__checkbox_style_orange" {% if "breakfast" == tags.0.title %}checked{% endif %}>
+                            <input type="checkbox" name="breakfast" id="id_breakfast" class="tags__checkbox tags__checkbox_style_orange" {% if tags.0.pk == 1 %}checked{% endif %}>
                             <label for="id_breakfast" class="tags__label">Завтрак</label>
                         </div>
                         <div class="tags__item">
-                            <input type="checkbox" name="lunch" id="id_lunch" class="tags__checkbox tags__checkbox_style_green" {% if "lunch" == tags.1.title %}checked{% endif %}>
+                            <input type="checkbox" name="lunch" id="id_lunch" class="tags__checkbox tags__checkbox_style_green" {% if tags.1.pk == 2 or tags.0.pk == 2%}checked{% endif %}>
                             <label for="id_lunch" class="tags__label">Обед</label>
                         </div>
                         <div class="tags__item">
-                            <input type="checkbox" name="dinner" id="id_dinner" class="tags__checkbox tags__checkbox_style_purple" {% if "dinner" == tags.2.title %}checked{% endif %}>
+                            <input type="checkbox" name="dinner" id="id_dinner" class="tags__checkbox tags__checkbox_style_purple" {% if tags.0.pk == 3 or tags.1.pk == 3 or tags.2.pk == 3 %}checked{% endif %}>
                             <label for="id_dinner" class="tags__label">Ужин</label>
                         </div>
                     </div>
@@ -54,10 +54,19 @@
                         <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
                     </div>
                     <div class="form__field-group-ingredientes-container">
-
+                        {% for item, volume, ing_id, ing_name_id in ing_vol %}
+                            <div class="form__field-item-ingredient" id="{{ing_id}}">
+                                <span>{{ item }} {{ volume|floatformat }} {{ item.unit }}</span>
+                                <span class="form__field-item-delete"></span>
+                                <input id="name{{ ing_name_id }}" name="name{{ ing_name_id }}" type="hidden" value="{{ item }}">
+                                <input id="value{{ ing_name_id }}" name="value{{ ing_name_id }}" type="hidden" value="{{ volume|floatformat }}">
+                                <input id="units{{ ing_name_id }}" name="units{{ ing_name_id }}" type="hidden" value="{{ item.unit }}">
+                            </div>
+                        {% endfor %}
                     </div>
                     <span class="form__ingredient-link" id="addIng">Добавить ингредиент</span>
                     <span class="form__error"></span>
+                    
                 </div>
             </div>
             <div class="form__group">

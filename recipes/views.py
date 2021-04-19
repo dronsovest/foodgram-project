@@ -151,7 +151,7 @@ def recipe_add(request):
     recipe_get.author = request.user
     recipe_get.slug = slugerfield(recipe_get.title)
     recipe_get.save()
-    #Добавляем тэги и ингредиенты
+    # Добавляем тэги и ингредиенты
     query_dict = request.POST.dict()
     for key, value in query_dict.items():
         if key == "breakfast" or key == "lunch" or key == "dinner":
@@ -172,9 +172,6 @@ def recipe_add(request):
 @login_required
 def recipe_edit(request, slug):
     recipe = get_object_or_404(Recipe, slug=slug)
-    title = "Редактирование рецепта"
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
-    tags = list(Tag.objects.filter(tag__recipe=recipe))
     if recipe.author != request.user:
         return redirect("recipe", slug=slug)
     form = RecipeForm(
@@ -182,22 +179,38 @@ def recipe_edit(request, slug):
         files=request.FILES or None,
         instance=recipe)
     if not form.is_valid():
-        print(form)
+        title = "Редактирование рецепта"
+        purchase_count = ShoppingList.objects.filter(user=request.user).count()
+        tags = list(Tag.objects.filter(tag__recipe=recipe))
+        ingredients = Ingredient.objects.filter(ingredient__recipe=recipe)
+        ing_vol = []
+        id_count = 1
+        for ingredient in ingredients:
+            volume = get_object_or_404(
+                RecipeIngredients,
+                ingredient=ingredient,
+                recipe=recipe
+            )
+            ing_id = "ing_" + str(id_count)
+            ing_name_id = "Ingredient_" + str(id_count)
+            ing_vol.append((ingredient, volume.volume, ing_id, ing_name_id))
+            id_count += 1
         return render(request, "new.html", {
             "form": form,
             "title": title,
             "purchase_count": purchase_count,
             "recipe": recipe,
             "tags": tags,
+            "ing_vol": ing_vol,
         })
     recipe_get = form.save(commit=False)
     recipe_get.author = request.user
     recipe_get.slug = slug
     recipe_get.save()
-    #Удаляем теги и рецепты для ингредиента
+    # Удаляем теги и рецепты для ингредиента
     TagsRecipe.objects.filter(recipe=recipe).delete()
     RecipeIngredients.objects.filter(recipe=recipe).delete()
-    #Добавляем их заново из формы
+    # Добавляем их заново из формы
     query_dict = request.POST.dict()
     for key, value in query_dict.items():
         if key == "breakfast" or key == "lunch" or key == "dinner":

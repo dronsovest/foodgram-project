@@ -37,7 +37,11 @@ def follows_list(request):
     for author in authors:
         recipes_count = Recipe.objects.filter(author=author).count()
         recipes = Recipe.objects.filter(author=author)[:3]
-        authors_recipes.append((author, recipes, format_counter(recipes_count)))
+        authors_recipes.append((
+            author,
+            recipes,
+            format_counter(recipes_count)
+        ))
     paginator = Paginator(authors_recipes, 3)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -53,11 +57,12 @@ def follows_list(request):
 def follows_add(request):
     request_body = json.loads(request.body)
     author = get_object_or_404(User, username=request_body['id'])
-    if request.user  == author:
+    if request.user == author:
         return redirect("user_recipes", username=author.username)
     new_follow = Follow.objects.get_or_create(
-        user=request.user, 
-        author=author)
+        user=request.user,
+        author=author
+    )
     return JsonResponse({"success": True})
 
 

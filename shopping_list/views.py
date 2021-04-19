@@ -35,7 +35,7 @@ def shopping_list_delete(request, id):
     recipe = get_object_or_404(ShoppingList, recipe=id, user=request.user)
     recipe.delete()
     return JsonResponse({"success": True})
-    
+
 
 def shopping_list_download(request):
     purchase_ingreditnts = RecipeIngredients.objects.filter(
@@ -53,5 +53,7 @@ def shopping_list_download(request):
         content += "{} ({}) - {}\n".format(key, value[0], value[1])
     filename = "purchase.txt"
     response = HttpResponse(content, content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(
+        filename
+    )
     return response
