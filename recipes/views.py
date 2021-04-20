@@ -30,7 +30,9 @@ def index(request):
     recipes_tags = []
     is_favorites = False
     is_purchase = False
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
+    purchase_count = 0
+    if request.user.is_authenticated:
+        purchase_count = ShoppingList.objects.filter(user=request.user).count()
     for recipe in recipes:
         tags = list(Tag.objects.filter(tag__recipe=recipe))
         if request.user.is_authenticated:
@@ -59,12 +61,15 @@ def user_recipes(request, username):
     recipes = Recipe.objects.filter(author__username=username)
     recipes_tags = []
     is_favorites = False
+    is_follow = False
     is_purchase = False
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
-    is_follow = Follow.objects.filter(
-        author=get_object_or_404(User, username=username),
-        user=request.user
-    ).exists()
+    purchase_count = 0
+    if request.user.is_authenticated:
+        purchase_count = ShoppingList.objects.filter(user=request.user).count()
+        is_follow = Follow.objects.filter(
+            author=get_object_or_404(User, username=username),
+            user=request.user
+        ).exists()
     for recipe in recipes:
         tags = list(Tag.objects.filter(tag__recipe=recipe))
         if request.user.is_authenticated:
@@ -97,17 +102,19 @@ def recipe_view(request, slug):
     ing_vol = []
     is_favorites = False
     is_purchase = False
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
-    is_follow = Follow.objects.filter(
-        author=get_object_or_404(User, username=recipe.author.username),
-        user=request.user
-    ).exists()
-    is_purchase = ShoppingList.objects.filter(
+    purchase_count = 0
+    is_follow = False
+    if request.user.is_authenticated:
+        is_favorites = Favorites.objects.filter(
             recipe=recipe,
             user=request.user
         ).exists()
-    if request.user.is_authenticated:
-        is_favorites = Favorites.objects.filter(
+        purchase_count = ShoppingList.objects.filter(user=request.user).count()
+        is_follow = Follow.objects.filter(
+            author=get_object_or_404(User, username=recipe.author.username),
+            user=request.user
+        ).exists()
+        is_purchase = ShoppingList.objects.filter(
             recipe=recipe,
             user=request.user
         ).exists()
