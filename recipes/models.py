@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 from django.contrib.auth import get_user_model
 
 
@@ -49,7 +50,7 @@ class TagsRecipe(models.Model):
     )
 
     class Meta:
-        unique_together = ("tag", "recipe")
+        UniqueConstraint(fields=["tag", "recipe"], name="unique_tag")
 
 
 class Ingredient(models.Model):
@@ -74,4 +75,4 @@ class RecipeIngredients(models.Model):
     volume = models.FloatField(blank=True, null=True)
 
     class Meta:
-        unique_together = ("recipe", "ingredient")
+        UniqueConstraint(fields=["recipe", "ingredient"], name="unique_ingredient")

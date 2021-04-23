@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}" />
+{% endblock %}
+
+<title>{{ flatpage.title }}</title>
+
+
+<main class="main container">
+{{ flatpage.content}}
+</main>
+
+{% endblock %}

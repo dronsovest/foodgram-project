@@ -4,7 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
-from .models import Favorites
+from .models import Favorite
 from recipes.models import Recipe, Tag
 from shopping_list.models import ShoppingList
 
@@ -45,14 +45,14 @@ def favorites_add(request):
     request_body = json.loads(request.body)
     recipe_id = get_object_or_404(Recipe, id=int(request_body['id']))
     user_id = request.user
-    Favorites.objects.get_or_create(user=user_id, recipe=recipe_id)
+    Favorite.objects.get_or_create(user=user_id, recipe=recipe_id)
     return JsonResponse({"success": True})
 
 
 @login_required
 def favorites_del(request, id):
     favorites_recipe = get_object_or_404(
-        Favorites,
+        Favorite,
         recipe=id,
         user=request.user
     )

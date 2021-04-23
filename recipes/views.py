@@ -8,7 +8,7 @@ from django.http import JsonResponse
 
 from .models import Recipe, Tag, Ingredient, RecipeIngredients, TagsRecipe
 from .forms import RecipeForm
-from favorites.models import Favorites
+from favorites.models import Favorite
 from follows.models import Follow
 from shopping_list.models import ShoppingList
 
@@ -36,7 +36,7 @@ def index(request):
     for recipe in recipes:
         tags = list(Tag.objects.filter(tag__recipe=recipe))
         if request.user.is_authenticated:
-            is_favorites = Favorites.objects.filter(
+            is_favorites = Favorite.objects.filter(
                 recipe=recipe,
                 user=request.user
             ).exists()
@@ -73,7 +73,7 @@ def user_recipes(request, username):
     for recipe in recipes:
         tags = list(Tag.objects.filter(tag__recipe=recipe))
         if request.user.is_authenticated:
-            is_favorites = Favorites.objects.filter(
+            is_favorites = Favorite.objects.filter(
                 recipe=recipe,
                 user=request.user
             ).exists()
@@ -105,7 +105,7 @@ def recipe_view(request, slug):
     purchase_count = 0
     is_follow = False
     if request.user.is_authenticated:
-        is_favorites = Favorites.objects.filter(
+        is_favorites = Favorite.objects.filter(
             recipe=recipe,
             user=request.user
         ).exists()

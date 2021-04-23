@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 from django.contrib.auth import get_user_model
 from recipes.models import Recipe
 
@@ -6,7 +7,7 @@ from recipes.models import Recipe
 User = get_user_model()
 
 
-class Favorites(models.Model):
+class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         related_name="user_fav",
@@ -19,4 +20,4 @@ class Favorites(models.Model):
     )
 
     class Meta:
-        unique_together = ("user", "recipe")
+        UniqueConstraint(fields=["user", "recipe"], name="unique_favorite")

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Favorites
+from .models import Favorite
 
 
 class FavoritesAdmin(admin.ModelAdmin):
@@ -9,4 +9,4 @@ class FavoritesAdmin(admin.ModelAdmin):
     empty_value_display = "-пусто-"
 
 
-admin.site.register(Favorites, FavoritesAdmin)
+admin.site.register(Favorite, FavoritesAdmin)
