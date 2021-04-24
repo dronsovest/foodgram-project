@@ -4,28 +4,15 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, get_object_or_404, redirect
-
 import json
 
 from .models import Follow
+from .utils import format_counter
 from recipes.models import Recipe
 from shopping_list.models import ShoppingList
 
 
 User = get_user_model()
-
-
-def format_counter(recipe_count):
-    recipe_count -= 3
-    if recipe_count < 1:
-        return ""
-    end_count = recipe_count % 10
-    if end_count == 1:
-        return "Еще {} рецепт...".format(recipe_count)
-    elif 2 <= end_count <= 4:
-        return "Еще {} рецепта...".format(recipe_count)
-    elif end_count >= 5:
-        return "Еще {} рецептов...".format(recipe_count)
 
 
 @login_required
@@ -56,6 +43,8 @@ def follows_list(request):
 @login_required
 def follows_add(request):
     request_body = json.loads(request.body)
+    if not request_body['id']:
+        return JsonResponse({"success": False})
     author = get_object_or_404(User, username=request_body['id'])
     if request.user == author:
         return redirect("user_recipes", username=author.username)

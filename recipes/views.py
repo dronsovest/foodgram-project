@@ -1,5 +1,4 @@
 import json
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
@@ -8,21 +7,13 @@ from django.http import JsonResponse
 
 from .models import Recipe, Tag, Ingredient, RecipeIngredients, TagsRecipe
 from .forms import RecipeForm
+from .utils import slugerfield, get_pagination
 from favorites.models import Favorite
 from follows.models import Follow
 from shopping_list.models import ShoppingList
 
 
 User = get_user_model()
-
-
-def slugerfield(title):
-    index = 1
-    slug = title + str(index)
-    while Recipe.objects.filter(slug=slug).exists():
-        index += 1
-        slug = title + str(index)
-    return slug
 
 
 def index(request):
@@ -33,19 +24,7 @@ def index(request):
     purchase_count = 0
     if request.user.is_authenticated:
         purchase_count = ShoppingList.objects.filter(user=request.user).count()
-    for recipe in recipes:
-        tags = list(Tag.objects.filter(tag__recipe=recipe))
-        if request.user.is_authenticated:
-            is_favorites = Favorite.objects.filter(
-                recipe=recipe,
-                user=request.user
-            ).exists()
-            is_purchase = ShoppingList.objects.filter(
-                recipe=recipe,
-                user=request.user
-            ).exists()
-        recipes_tags.append((recipe, tags, is_favorites, is_purchase))
-        paginator = Paginator(recipes_tags, 6)
+    paginator = get_pagination(request, recipes, recipes_tags)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     title = "Рецепты"
@@ -70,19 +49,7 @@ def user_recipes(request, username):
             author=get_object_or_404(User, username=username),
             user=request.user
         ).exists()
-    for recipe in recipes:
-        tags = list(Tag.objects.filter(tag__recipe=recipe))
-        if request.user.is_authenticated:
-            is_favorites = Favorite.objects.filter(
-                recipe=recipe,
-                user=request.user
-            ).exists()
-            is_purchase = ShoppingList.objects.filter(
-                recipe=recipe,
-                user=request.user
-            ).exists()
-        recipes_tags.append((recipe, tags, is_favorites, is_purchase))
-        paginator = Paginator(recipes_tags, 6)
+    paginator = get_pagination(request, recipes, recipes_tags)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     title = username
@@ -97,8 +64,8 @@ def user_recipes(request, username):
 
 def recipe_view(request, slug):
     recipe = get_object_or_404(Recipe, slug=slug)
-    ingredients = Ingredient.objects.filter(ingredient__recipe=recipe)
-    tags = list(Tag.objects.filter(tag__recipe=recipe))
+    ingredients = Ingredient.objects.filter(ingredients__recipe=recipe)
+    tags = list(Tag.objects.filter(tags__recipe=recipe))
     ing_vol = []
     is_favorites = False
     is_purchase = False
@@ -138,42 +105,27 @@ def recipe_view(request, slug):
 
 @login_required
 def recipe_add(request):
-    form = RecipeForm()
-    title = "Новый рецепт"
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
     purchase_count = ShoppingList.objects.filter(user=request.user).count()
-    if not request.method == "POST":
-        return render(request, "new.html", {
-            "form": form,
-            "title": title,
-            "purchase_count": purchase_count,
-        })
-    form = RecipeForm(request.POST, files=request.FILES)
-    if not form.is_valid():
-        return render(request, "new.html", {
-            "form": form,
-            "title": title,
-            "purchase_count": purchase_count,
-        })
-    recipe_get = form.save(commit=False)
-    recipe_get.author = request.user
-    recipe_get.slug = slugerfield(recipe_get.title)
-    recipe_get.save()
-    # Добавляем тэги и ингредиенты
-    query_dict = request.POST.dict()
-    for key, value in query_dict.items():
-        if key == "breakfast" or key == "lunch" or key == "dinner":
-            TagsRecipe.objects.create(
-                tag=Tag.objects.get(title=key),
-                recipe=Recipe.objects.get(slug=recipe_get.slug)
-                )
-        elif "nameIngredient" in key:
-            key_value = "valueIngredient_" + key[15:]
-            RecipeIngredients.objects.create(
-                recipe=Recipe.objects.get(slug=recipe_get.slug),
-                ingredient=Ingredient.objects.get(title=value),
-                volume=query_dict[key_value]
-            )
-    return redirect("/")
+    if form.is_valid():
+        ingredients = form.cleaned_data['ingredients']
+        recipe_get = form.save()
+        form.cleaned_data['ingredients'] = []
+        Ingredient.objects.bulk_create(
+            get_ingredients_from_form(ingredients, recipe))
+        # Добавляем тэги 
+        query_dict = request.POST.dict() 
+        for key, value in query_dict.items(): 
+            if key in ["breakfast", "lunch", "dinner"]: 
+                TagsRecipe.objects.create( 
+                    tag=Tag.objects.get_object_or_404(title=key), 
+                    recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug) 
+                    ) 
+        return redirect('index')
+    context = {'title': 'Новый рецепт',
+               'form': form,
+               }
+    return render(request, 'new.html', context)
 
 
 @login_required
@@ -188,8 +140,8 @@ def recipe_edit(request, slug):
     if not form.is_valid():
         title = "Редактирование рецепта"
         purchase_count = ShoppingList.objects.filter(user=request.user).count()
-        tags = list(Tag.objects.filter(tag__recipe=recipe))
-        ingredients = Ingredient.objects.filter(ingredient__recipe=recipe)
+        tags = list(Tag.objects.filter(tags__recipe=recipe))
+        ingredients = Ingredient.objects.filter(ingredients__recipe=recipe)
         ing_vol = []
         id_count = 1
         for ingredient in ingredients:
@@ -210,17 +162,14 @@ def recipe_edit(request, slug):
             "tags": tags,
             "ing_vol": ing_vol,
         })
-    recipe_get = form.save(commit=False)
-    recipe_get.author = request.user
-    recipe_get.slug = slug
-    recipe_get.save()
+    recipe_get = form.save()
     # Удаляем теги и рецепты для ингредиента
     TagsRecipe.objects.filter(recipe=recipe).delete()
     RecipeIngredients.objects.filter(recipe=recipe).delete()
     # Добавляем их заново из формы
     query_dict = request.POST.dict()
     for key, value in query_dict.items():
-        if key == "breakfast" or key == "lunch" or key == "dinner":
+        if key in ["breakfast", "lunch", "dinner"]:
             TagsRecipe.objects.create(
                 tag=Tag.objects.get(title=key),
                 recipe=Recipe.objects.get(slug=recipe_get.slug)
@@ -254,3 +203,16 @@ def ingredients_query(request):
             "dimension": ingredient.unit
         })
     return JsonResponse(response, safe=False)
+
+
+def page_not_found(request, exception):
+    return render(
+        request,
+        "misc/404.html",
+        {"path": request.path},
+        status=404
+    )
+
+
+def server_error(request):
+    return render(request, "misc/500.html", status=500)

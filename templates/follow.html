@@ -31,7 +31,7 @@
                 {% endfor %}
                 
                 <li class="card-user__item">
-                    <a href="/users/{{ author.username}}" class="card-user__link link">{{ recipes_counter }}</a>
+                    <a href="{% url 'user_recipes' author.username %}" class="card-user__link link">{{ recipes_counter }}</a>
                 </li>
             </ul>
         </div>

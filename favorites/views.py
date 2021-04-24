@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -7,8 +8,6 @@ from django.http import JsonResponse
 from .models import Favorite
 from recipes.models import Recipe, Tag
 from shopping_list.models import ShoppingList
-
-import json
 
 
 User = get_user_model()
@@ -22,7 +21,7 @@ def favorite_list(request):
     is_purchase = False
     purchase_count = ShoppingList.objects.filter(user=request.user).count()
     for recipe in recipes:
-        tags = list(Tag.objects.filter(tag__recipe=recipe))
+        tags = list(Tag.objects.filter(tags__recipe=recipe))
         is_purchase = ShoppingList.objects.filter(
                 recipe=recipe,
                 user=request.user
@@ -43,6 +42,8 @@ def favorite_list(request):
 @login_required
 def favorites_add(request):
     request_body = json.loads(request.body)
+    if not request_body['id']:
+        return JsonResponse({"success": False})
     recipe_id = get_object_or_404(Recipe, id=int(request_body['id']))
     user_id = request.user
     Favorite.objects.get_or_create(user=user_id, recipe=recipe_id)

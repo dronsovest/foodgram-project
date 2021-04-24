@@ -10,20 +10,7 @@
 <main class="main container">
     <div class="main__header">
         <h1 class="main__title">{{ title }}</h1>
-        <ul class="tags">
-            <li class="tags__item">
-                <a id="breakfast" class="tags__checkbox tags__checkbox_style_orange tags__checkbox_active" href="#"></a>
-                <span class="tags__label">Завтрак</span>
-            </li>
-            <li class="tags__item">
-                <a id="lunch" class="tags__checkbox tags__checkbox_style_green tags__checkbox_active" href="#"></a>
-                <span for="lunch" class="tags__label">Обед</span>
-            </li>
-            <li class="tags__item">
-                <a id="dinner" class="tags__checkbox tags__checkbox_style_purple tags__checkbox_active" href="#"></a>
-                <label for="dinner" class="tags__label">Ужин</label>
-            </li>
-        </ul>
+        {% include 'include/tags.html' %}
     </div>
     {% if "users" in request.path %}
     <div class="author-subscribe" data-author="{{ title }}">
@@ -42,9 +29,9 @@
     <div class="card-list">
     {% for recipe, tags, is_favorites, is_purchase in page %}
     <div class="card" data-id="{{ recipe.pk }}">
-        <a href="/recipe/{{ recipe.slug }}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Посмотреть рецепт" class="card__image"></a>
+        <a href="{% url 'recipe' recipe.slug %}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Посмотреть рецепт" class="card__image"></a>
         <div class="card__body">
-            <a class="card__title link" href="/recipe/{{ recipe.slug }}" target="_blank">{{ recipe.title }}</a>
+            <a class="card__title link" href="{% url 'recipe' recipe.slug %}" target="_blank">{{ recipe.title }}</a>
             <ul class="card__items">
                 {% for tag in tags %}
                     {% if tag.title == "lunch" %}<li class="card__item"><span class="badge badge_style_green">Обед</span></li>{% endif %}
@@ -54,7 +41,7 @@
             </ul>
             <div class="card__items card__items_column">
                 <p class="card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин</p>
-                <p class="card__text"><span class="icon-user"></span> <a href="/users/{{ recipe.author.username}}" style="color: black">{{ recipe.author }}</a></p>
+                <p class="card__text"><span class="icon-user"></span> <a href="{% url 'user_recipes' recipe.author.username %}" style="color: black">{{ recipe.author }}</a></p>
             </div>
         </div>
         <div class="card__footer">
