@@ -1,11 +1,10 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.conf import settings
 
 from .models import Recipe, Tag
 from favorites.models import Favorite
 from shopping_list.models import ShoppingList
-
-
-PAGE_SIZE = 6
+from follows.models import Follow
 
 
 def slugerfield(title):
@@ -30,5 +29,20 @@ def get_pagination(request, recipes, recipes_tags):
                 user=request.user
             ).exists()
         recipes_tags.append((recipe, tags, is_favorites, is_purchase))
-    paginator = Paginator(recipes_tags, PAGE_SIZE)
+    paginator = Paginator(recipes_tags, settings.PAGE_SIZE)
     return paginator
+
+
+def purchase_counter(request):
+    if request.user.is_authenticated:
+        return ShoppingList.objects.filter(user=request.user).count()
+    return 0
+
+
+def get_is_follow(request, author):
+    if request.user.is_authenticated:
+        return (Follow.objects.filter(
+            author=author,
+            user=request.user
+        ).exists())
+    return False

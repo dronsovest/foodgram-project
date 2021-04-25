@@ -21,4 +21,9 @@ class ShoppingList(models.Model):
     )
 
     class Meta:
-        UniqueConstraint(fields=["user", "recipe"], name="unique_purchase")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="unique_purchase"
+            )
+        ]

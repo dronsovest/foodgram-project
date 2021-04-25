@@ -57,7 +57,12 @@ class TagsRecipe(models.Model):
     )
 
     class Meta:
-        UniqueConstraint(fields=["tag", "recipe"], name="unique_tag")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tag", "recipe"],
+                name="unique_tag"
+            )
+        ]
 
 
 class Ingredient(models.Model):
@@ -71,7 +76,7 @@ class Ingredient(models.Model):
         return self.title
 
 
-class RecipeIngredients(models.Model):
+class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         related_name="recipe_ingredients",
@@ -88,4 +93,9 @@ class RecipeIngredients(models.Model):
     )
 
     class Meta:
-        UniqueConstraint(fields=["recipe", "ingredient"], name="unique_ingredient")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipe", "ingredient"],
+                name="unique_ingredient"
+            )
+        ]

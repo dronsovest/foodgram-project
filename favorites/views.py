@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from .models import Favorite
 from recipes.models import Recipe, Tag
 from shopping_list.models import ShoppingList
+from recipes.utils import get_pagination, purchase_counter
 
 
 User = get_user_model()
@@ -17,17 +18,8 @@ User = get_user_model()
 def favorite_list(request):
     recipes = Recipe.objects.filter(recipe_fav__user=request.user)
     recipes_tags = []
-    is_favorites = True
-    is_purchase = False
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
-    for recipe in recipes:
-        tags = list(Tag.objects.filter(tags__recipe=recipe))
-        is_purchase = ShoppingList.objects.filter(
-                recipe=recipe,
-                user=request.user
-            ).exists()
-        recipes_tags.append((recipe, tags, is_favorites, is_purchase))
-    paginator = Paginator(recipes_tags, 3)
+    purchase_count = purchase_counter(request)
+    paginator = get_pagination(request, recipes, recipes_tags)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     title = "Избранное"
@@ -42,9 +34,7 @@ def favorite_list(request):
 @login_required
 def favorites_add(request):
     request_body = json.loads(request.body)
-    if not request_body['id']:
-        return JsonResponse({"success": False})
-    recipe_id = get_object_or_404(Recipe, id=int(request_body['id']))
+    recipe_id = get_object_or_404(Recipe, id=int(request_body.get('id')))
     user_id = request.user
     Favorite.objects.get_or_create(user=user_id, recipe=recipe_id)
     return JsonResponse({"success": True})

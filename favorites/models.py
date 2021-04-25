@@ -21,4 +21,9 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        UniqueConstraint(fields=["user", "recipe"], name="unique_favorite")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="unique_favorite"
+            )
+        ]

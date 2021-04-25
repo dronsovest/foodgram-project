@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Recipe, Ingredient, Tag, RecipeIngredients, TagsRecipe
+from .models import Recipe, Ingredient, Tag, RecipeIngredient, TagsRecipe
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -23,7 +23,7 @@ class TagAdmin(admin.ModelAdmin):
     empty_value_display = "-пусто-"
 
 
-class RecipeIngredientsAdmin(admin.ModelAdmin):
+class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = ("pk", "recipe", "ingredient", "volume")
     list_filter = ("recipe",)
     empty_value_display = "-пусто-"
@@ -38,5 +38,5 @@ class TagsRecipeAdmin(admin.ModelAdmin):
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(RecipeIngredients, RecipeIngredientsAdmin)
+admin.site.register(RecipeIngredient, RecipeIngredientAdmin)
 admin.site.register(TagsRecipe, TagsRecipeAdmin)

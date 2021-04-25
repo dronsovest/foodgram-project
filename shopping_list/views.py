@@ -4,14 +4,15 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 
 from .models import ShoppingList
-from recipes.models import Recipe, RecipeIngredients, Ingredient
+from recipes.models import Recipe, RecipeIngredient, Ingredient
+from recipes.utils import purchase_counter
 
 
 @login_required
 def shopping_list(request):
     recipes = Recipe.objects.filter(recipe_shl__user=request.user)
     title = "Список покупок"
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
+    purchase_count = purchase_counter(request)
     return render(request, "shop-list.html", {
         "recipes": recipes,
         "title": title,
@@ -22,9 +23,7 @@ def shopping_list(request):
 @login_required
 def shopping_list_add(request):
     request_body = json.loads(request.body)
-    if not request_body['id']:
-        return JsonResponse({"success": False})
-    recipe_id = get_object_or_404(Recipe, id=int(request_body['id']))
+    recipe_id = get_object_or_404(Recipe, id=int(request_body.get('id')))
     user_id = request.user
     ShoppingList.objects.get_or_create(user=user_id, recipe=recipe_id)
     return JsonResponse({"success": True})
@@ -38,12 +37,12 @@ def shopping_list_delete(request, id):
 
 
 def shopping_list_download(request):
-    purchase_ingreditnts = RecipeIngredients.objects.filter(
+    purchase_ingreditnts = RecipeIngredient.objects.filter(
         recipe__recipe_shl__user=request.user
     )
     precontent = {}
     for item in purchase_ingreditnts:
-        ingredient = Ingredient.objects.get(title=item.ingredient.title)
+        ingredient = Ingredient.objects.get_object_or_404(title=item.ingredient.title)
         if item.ingredient.title in precontent:
             precontent[item.ingredient.title][1] += item.volume
         else:

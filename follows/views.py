@@ -10,6 +10,7 @@ from .models import Follow
 from .utils import format_counter
 from recipes.models import Recipe
 from shopping_list.models import ShoppingList
+from recipes.utils import purchase_counter
 
 
 User = get_user_model()
@@ -18,7 +19,7 @@ User = get_user_model()
 @login_required
 def follows_list(request):
     title = "Мои подписки"
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
+    purchase_count = purchase_counter(request)
     authors = User.objects.filter(following__user=request.user)
     authors_recipes = []
     for author in authors:
@@ -43,9 +44,7 @@ def follows_list(request):
 @login_required
 def follows_add(request):
     request_body = json.loads(request.body)
-    if not request_body['id']:
-        return JsonResponse({"success": False})
-    author = get_object_or_404(User, username=request_body['id'])
+    author = get_object_or_404(User, username=request_body.get('id'))
     if request.user == author:
         return redirect("user_recipes", username=author.username)
     new_follow = Follow.objects.get_or_create(

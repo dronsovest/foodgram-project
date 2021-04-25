@@ -5,9 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 
-from .models import Recipe, Tag, Ingredient, RecipeIngredients, TagsRecipe
+from .models import Recipe, Tag, Ingredient, RecipeIngredient, TagsRecipe
 from .forms import RecipeForm
 from .utils import slugerfield, get_pagination
+from .utils import purchase_counter, get_is_follow
 from favorites.models import Favorite
 from follows.models import Follow
 from shopping_list.models import ShoppingList
@@ -19,11 +20,7 @@ User = get_user_model()
 def index(request):
     recipes = Recipe.objects.all()
     recipes_tags = []
-    is_favorites = False
-    is_purchase = False
-    purchase_count = 0
-    if request.user.is_authenticated:
-        purchase_count = ShoppingList.objects.filter(user=request.user).count()
+    purchase_count = purchase_counter(request)
     paginator = get_pagination(request, recipes, recipes_tags)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -39,16 +36,9 @@ def index(request):
 def user_recipes(request, username):
     recipes = Recipe.objects.filter(author__username=username)
     recipes_tags = []
-    is_favorites = False
-    is_follow = False
-    is_purchase = False
-    purchase_count = 0
-    if request.user.is_authenticated:
-        purchase_count = ShoppingList.objects.filter(user=request.user).count()
-        is_follow = Follow.objects.filter(
-            author=get_object_or_404(User, username=username),
-            user=request.user
-        ).exists()
+    author=get_object_or_404(User, username=username)
+    is_follow = get_is_follow(request, author)
+    purchase_count = purchase_counter(request)
     paginator = get_pagination(request, recipes, recipes_tags)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -69,16 +59,11 @@ def recipe_view(request, slug):
     ing_vol = []
     is_favorites = False
     is_purchase = False
-    purchase_count = 0
-    is_follow = False
+    purchase_count = purchase_counter(request)
+    is_follow = get_is_follow(request, recipe.author)
     if request.user.is_authenticated:
         is_favorites = Favorite.objects.filter(
             recipe=recipe,
-            user=request.user
-        ).exists()
-        purchase_count = ShoppingList.objects.filter(user=request.user).count()
-        is_follow = Follow.objects.filter(
-            author=get_object_or_404(User, username=recipe.author.username),
             user=request.user
         ).exists()
         is_purchase = ShoppingList.objects.filter(
@@ -87,7 +72,7 @@ def recipe_view(request, slug):
         ).exists()
     for ingredient in ingredients:
         volume = get_object_or_404(
-            RecipeIngredients,
+            RecipeIngredient,
             ingredient=ingredient,
             recipe=recipe
         )
@@ -106,7 +91,7 @@ def recipe_view(request, slug):
 @login_required
 def recipe_add(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-    purchase_count = ShoppingList.objects.filter(user=request.user).count()
+    purchase_count = purchase_counter(request)
     if form.is_valid():
         ingredients = form.cleaned_data['ingredients']
         recipe_get = form.save()
@@ -121,11 +106,12 @@ def recipe_add(request):
                     tag=Tag.objects.get_object_or_404(title=key), 
                     recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug) 
                     ) 
-        return redirect('index')
-    context = {'title': 'Новый рецепт',
-               'form': form,
+        return redirect("index")
+    context = {"title": "Новый рецепт",
+               "form": form,
+               "purchase_count": purchase_count,
                }
-    return render(request, 'new.html', context)
+    return render(request, "new.html", context)
 
 
 @login_required
@@ -139,14 +125,14 @@ def recipe_edit(request, slug):
         instance=recipe)
     if not form.is_valid():
         title = "Редактирование рецепта"
-        purchase_count = ShoppingList.objects.filter(user=request.user).count()
+        purchase_count = purchase_counter(request)
         tags = list(Tag.objects.filter(tags__recipe=recipe))
         ingredients = Ingredient.objects.filter(ingredients__recipe=recipe)
         ing_vol = []
         id_count = 1
         for ingredient in ingredients:
             volume = get_object_or_404(
-                RecipeIngredients,
+                RecipeIngredient,
                 ingredient=ingredient,
                 recipe=recipe
             )
@@ -165,20 +151,20 @@ def recipe_edit(request, slug):
     recipe_get = form.save()
     # Удаляем теги и рецепты для ингредиента
     TagsRecipe.objects.filter(recipe=recipe).delete()
-    RecipeIngredients.objects.filter(recipe=recipe).delete()
+    RecipeIngredient.objects.filter(recipe=recipe).delete()
     # Добавляем их заново из формы
     query_dict = request.POST.dict()
     for key, value in query_dict.items():
         if key in ["breakfast", "lunch", "dinner"]:
             TagsRecipe.objects.create(
-                tag=Tag.objects.get(title=key),
-                recipe=Recipe.objects.get(slug=recipe_get.slug)
+                tag=Tag.objects.get_object_or_404(title=key),
+                recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug)
                 )
         elif "nameIngredient" in key:
             key_value = "valueIngredient_" + key[15:]
-            RecipeIngredients.objects.create(
-                recipe=Recipe.objects.get(slug=recipe_get.slug),
-                ingredient=Ingredient.objects.get(title=value),
+            RecipeIngredient.objects.create(
+                recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug),
+                ingredient=Ingredient.objects.get_object_or_404(title=value),
                 volume=query_dict[key_value]
             )
     return redirect("recipe", slug=slug)
@@ -203,16 +189,3 @@ def ingredients_query(request):
             "dimension": ingredient.unit
         })
     return JsonResponse(response, safe=False)
-
-
-def page_not_found(request, exception):
-    return render(
-        request,
-        "misc/404.html",
-        {"path": request.path},
-        status=404
-    )
-
-
-def server_error(request):
-    return render(request, "misc/500.html", status=500)

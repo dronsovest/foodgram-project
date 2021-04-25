@@ -21,7 +21,7 @@ class RecipeForm(forms.ModelForm):
         ingredient_amounts = self.data.getlist('valueIngredient')
         ingredients_clean = []
         for title, unit, amount in zip(ingredient_names, ingredient_units,
-                              ingredient_amounts):
+                                       ingredient_amounts):
             if int(unit) < 0:
                 raise forms.ValidationError('Количество ингредиентов '
                                             'должно быть больше нуля')
