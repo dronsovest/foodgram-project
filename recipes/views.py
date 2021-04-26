@@ -103,8 +103,8 @@ def recipe_add(request):
         for key, value in query_dict.items(): 
             if key in ["breakfast", "lunch", "dinner"]: 
                 TagsRecipe.objects.create( 
-                    tag=Tag.objects.get_object_or_404(title=key), 
-                    recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug) 
+                    tag = get_object_or_404(title=key), 
+                    recipe = get_object_or_404(slug=recipe_get.slug) 
                     ) 
         return redirect("index")
     context = {"title": "Новый рецепт",
@@ -157,14 +157,14 @@ def recipe_edit(request, slug):
     for key, value in query_dict.items():
         if key in ["breakfast", "lunch", "dinner"]:
             TagsRecipe.objects.create(
-                tag=Tag.objects.get_object_or_404(title=key),
-                recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug)
+                tag = get_object_or_404(title=key),
+                recipe = get_object_or_404(slug=recipe_get.slug)
                 )
         elif "nameIngredient" in key:
             key_value = "valueIngredient_" + key[15:]
             RecipeIngredient.objects.create(
-                recipe=Recipe.objects.get_object_or_404(slug=recipe_get.slug),
-                ingredient=Ingredient.objects.get_object_or_404(title=value),
+                recipe=get_object_or_404(slug=recipe_get.slug),
+                ingredient=get_object_or_404(title=value),
                 volume=query_dict[key_value]
             )
     return redirect("recipe", slug=slug)
