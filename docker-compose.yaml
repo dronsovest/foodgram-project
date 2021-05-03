@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:12.4
     volumes:
-      - postgres_data:/var/lib/postgresql/12/main/
+      - postgres_data:/var/lib/postgresql/data
     env_file:
       - foodgram/.env
   django:
@@ -30,7 +30,7 @@ services:
       - ./logs:/var/www/logs
       
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
       - django
 
