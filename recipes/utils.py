@@ -19,6 +19,8 @@ def slugerfield(title):
 def get_pagination(request, recipes, recipes_tags):
     for recipe in recipes:
         tags = list(Tag.objects.filter(tags__recipe=recipe))
+        is_favorites = False
+        is_purchase = False
         if request.user.is_authenticated:
             is_favorites = Favorite.objects.filter(
                 recipe=recipe,
