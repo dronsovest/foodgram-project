@@ -1,4 +1,9 @@
-API_yamdb
+Дипломный проект живёт по этому адресу
+http://84.252.137.64/
+
+superuser:
+test
+test1234
 
 It's api for my learning project. 
 
