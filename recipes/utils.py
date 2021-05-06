@@ -48,3 +48,13 @@ def get_is_follow(request, author):
             user=request.user
         ).exists())
     return False
+
+def get_recipes(request):
+    tags = request.GET.getlist("tags")
+    if tags:
+        recipes = (
+            Recipe.objects.filter(recipe_tags__tag__title__in=tags)
+        )
+    else:
+        recipes = Recipe.objects.all()
+    return recipes

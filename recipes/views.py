@@ -7,7 +7,7 @@ from django.http import JsonResponse
 
 from .models import Recipe, Tag, Ingredient, RecipeIngredient, TagsRecipe
 from .forms import RecipeForm
-from .utils import slugerfield, get_pagination
+from .utils import slugerfield, get_pagination, get_recipes
 from .utils import purchase_counter, get_is_follow
 from favorites.models import Favorite
 from follows.models import Follow
@@ -18,7 +18,8 @@ User = get_user_model()
 
 
 def index(request):
-    recipes = Recipe.objects.all()
+    recipes = get_recipes(request)
+    all_tags = Tag.objects.all()
     recipes_tags = []
     purchase_count = purchase_counter(request)
     paginator = get_pagination(request, recipes, recipes_tags)
@@ -30,11 +31,14 @@ def index(request):
         "paginator": paginator,
         "title": title,
         "purchase_count": purchase_count,
+        "all_tags": all_tags,
     })
 
 
 def user_recipes(request, username):
-    recipes = Recipe.objects.filter(author__username=username)
+    recipes = get_recipes(request)
+    all_tags = Tag.objects.all()
+    recipes = recipes.filter(author__username=username)
     recipes_tags = []
     author=get_object_or_404(User, username=username)
     is_follow = get_is_follow(request, author)
@@ -49,6 +53,7 @@ def user_recipes(request, username):
         "title": title,
         "is_follow": is_follow,
         "purchase_count": purchase_count,
+        "all_tags": all_tags,
     })
 
 

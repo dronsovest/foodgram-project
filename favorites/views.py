@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from .models import Favorite
 from recipes.models import Recipe, Tag
 from shopping_list.models import ShoppingList
-from recipes.utils import get_pagination, purchase_counter
+from recipes.utils import get_pagination, purchase_counter, get_recipes
 
 
 User = get_user_model()
@@ -16,7 +16,8 @@ User = get_user_model()
 
 @login_required
 def favorite_list(request):
-    recipes = Recipe.objects.filter(recipe_fav__user=request.user)
+    recipes = get_recipes(request).filter(recipe_fav__user=request.user)
+    all_tags = Tag.objects.all()
     recipes_tags = []
     purchase_count = purchase_counter(request)
     paginator = get_pagination(request, recipes, recipes_tags)
@@ -28,6 +29,7 @@ def favorite_list(request):
         "paginator": paginator,
         "title": title,
         "purchase_count": purchase_count,
+        "all_tags": all_tags,
     })
 
 
