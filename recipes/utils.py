@@ -54,7 +54,7 @@ def get_recipes(request):
     if tags:
         recipes = (
             Recipe.objects.filter(recipe_tags__tag__title__in=tags)
-        )
+        ).distinct()
     else:
         recipes = Recipe.objects.all()
     return recipes
