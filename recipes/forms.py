@@ -4,13 +4,24 @@ from .models import Recipe, Tag, TagsRecipe
 
 
 class RecipeForm(forms.ModelForm):
+    title = forms.CharField(
+        max_length=60,
+        widget= forms.TextInput(attrs={"class":"form__input"})
+    )
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'tags__checkbox'}),
         to_field_name='title',
         required=False
     )
-
+    cooking_time = forms.IntegerField(
+        max_value=500,
+        widget=forms.NumberInput(attrs={"class":"form__input"})
+    )
+    description = forms.CharField(
+        max_length=20000,
+        widget= forms.Textarea(attrs={"class":"form__textarea", "rows":"8"})
+    )
     class Meta:
         model = Recipe
         fields = ('title', 'tags', 'cooking_time', 'description', 'image')

@@ -1,5 +1,5 @@
 import json
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 
@@ -33,6 +33,8 @@ def shopping_list_add(request):
 def shopping_list_delete(request, id):
     recipe = get_object_or_404(ShoppingList, recipe=id, user=request.user)
     recipe.delete()
+    if request.GET.get("reboot"):
+        return redirect("shopping_list")
     return JsonResponse({"success": True})
 
 
@@ -42,7 +44,10 @@ def shopping_list_download(request):
     )
     precontent = {}
     for item in purchase_ingreditnts:
-        ingredient = Ingredient.objects.get_object_or_404(title=item.ingredient.title)
+        ingredient = get_object_or_404(
+            Ingredient,
+            title=item.ingredient.title
+        )
         if item.ingredient.title in precontent:
             precontent[item.ingredient.title][1] += item.volume
         else:
