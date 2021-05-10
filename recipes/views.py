@@ -98,19 +98,23 @@ def recipe_add(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
     purchase_count = purchase_counter(request)
     if form.is_valid():
-        ingredients = form.cleaned_data['ingredients']
-        recipe_get = form.save()
-        form.cleaned_data['ingredients'] = []
-        Ingredient.objects.bulk_create(
-            get_ingredients_from_form(ingredients, recipe))
-        # Добавляем тэги 
-        query_dict = request.POST.dict() 
+        recipe_get = form.save_recipe(request)
+        # Добавляем тэги и ингредиенты
+        tags = list(form.cleaned_data['tags'])
+        for tag in tags:    
+            TagsRecipe.objects.create( 
+            tag = tag, 
+            recipe = get_object_or_404(Recipe, slug=recipe_get.slug) 
+            )
+        query_dict = request.POST.dict()
         for key, value in query_dict.items(): 
-            if key in ["breakfast", "lunch", "dinner"]: 
-                TagsRecipe.objects.create( 
-                    tag = get_object_or_404(title=key), 
-                    recipe = get_object_or_404(slug=recipe_get.slug) 
-                    ) 
+            if "nameIngredient" in key:
+                key_value = "valueIngredient_" + key[15:]
+                RecipeIngredient.objects.create(
+                    recipe=get_object_or_404(Recipe, slug=recipe_get.slug),
+                    ingredient=get_object_or_404(Ingredient, title=value),
+                    volume=query_dict[key_value]
+                )
         return redirect("index")
     context = {"title": "Новый рецепт",
                "form": form,
@@ -153,26 +157,27 @@ def recipe_edit(request, slug):
             "tags": tags,
             "ing_vol": ing_vol,
         })
-    recipe_get = form.save()
+    recipe_get = form.save_recipe(request)
     # Удаляем теги и рецепты для ингредиента
     TagsRecipe.objects.filter(recipe=recipe).delete()
     RecipeIngredient.objects.filter(recipe=recipe).delete()
     # Добавляем их заново из формы
+    tags = list(form.cleaned_data['tags'])
+    for tag in tags:    
+        TagsRecipe.objects.create( 
+        tag = tag, 
+        recipe = get_object_or_404(Recipe, slug=recipe_get.slug) 
+        )
     query_dict = request.POST.dict()
     for key, value in query_dict.items():
-        if key in ["breakfast", "lunch", "dinner"]:
-            TagsRecipe.objects.create(
-                tag = get_object_or_404(title=key),
-                recipe = get_object_or_404(slug=recipe_get.slug)
-                )
-        elif "nameIngredient" in key:
+        if "nameIngredient" in key:
             key_value = "valueIngredient_" + key[15:]
             RecipeIngredient.objects.create(
-                recipe=get_object_or_404(slug=recipe_get.slug),
-                ingredient=get_object_or_404(title=value),
+                recipe=get_object_or_404(Recipe, slug=recipe_get.slug),
+                ingredient=get_object_or_404(Ingredient, title=value),
                 volume=query_dict[key_value]
             )
-    return redirect("recipe", slug=slug)
+    return redirect("recipe", slug=recipe_get.slug)
 
 
 @login_required

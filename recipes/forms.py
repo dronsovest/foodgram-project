@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import Recipe, Tag, TagsRecipe
+from .utils import slugerfield
 
 
 class RecipeForm(forms.ModelForm):
@@ -10,13 +11,18 @@ class RecipeForm(forms.ModelForm):
     )
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.all(),
-        widget=forms.CheckboxSelectMultiple(attrs={'class': 'tags__checkbox'}),
-        to_field_name='title',
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "tags__checkbox"}),
+        to_field_name="title",
         required=False
     )
     cooking_time = forms.IntegerField(
         max_value=500,
         widget=forms.NumberInput(attrs={"class":"form__input"})
+    )
+    ingredients = forms.CharField(
+        max_length=60,
+        required=False,
+        widget= forms.TextInput(attrs={"class":"form__input"})
     )
     description = forms.CharField(
         max_length=20000,
@@ -24,24 +30,26 @@ class RecipeForm(forms.ModelForm):
     )
     class Meta:
         model = Recipe
-        fields = ('title', 'tags', 'cooking_time', 'description', 'image')
+        fields = (
+            "title",
+            "tags",
+            "cooking_time",
+            "ingredients",
+            "description",
+            "image",
+        )
 
     def clean_ingredients(self):
-        ingredient_names = self.data.getlist('nameIngredient')
-        ingredient_units = self.data.getlist('unitsIngredient')
-        ingredient_amounts = self.data.getlist('valueIngredient')
+        query_dict =self.data.dict()
         ingredients_clean = []
-        for title, unit, amount in zip(ingredient_names, ingredient_units,
-                                       ingredient_amounts):
-            if int(unit) < 0:
-                raise forms.ValidationError('Количество ингредиентов '
-                                            'должно быть больше нуля')
-            else:
-                ingredients_clean.append({
-                    'title': title,
-                    'unit': unit,
-                    'amount': amount
-                })
+        for key, value in query_dict.items(): 
+            if "nameIngredient" in key:
+                volume = "valueIngredient_" + key[15:]
+                if int(query_dict[volume]) <= 0:
+                    raise forms.ValidationError('Количество ингредиентов '
+                                                'должно быть больше нуля')
+                else:
+                    ingredients_clean.append(key)
         if len(ingredients_clean) == 0:
             raise forms.ValidationError('Добавьте ингредиент')
         return ingredients_clean
@@ -52,9 +60,9 @@ class RecipeForm(forms.ModelForm):
             raise forms.ValidationError('Добавьте тег')
         return data
 
-    def save(self):
-        recipe_get = form.save(commit=False)
+    def save_recipe(self, request):
+        recipe_get = self.save(commit=False)
         recipe_get.author = request.user
-        recipe_get.slug = slug
+        recipe_get.slug = slugerfield(recipe_get.title)
         recipe_get.save()
         return recipe_get
