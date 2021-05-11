@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Recipe, Tag, TagsRecipe
+from .models import Recipe, Tag, TagsRecipe, Ingredient
 from .utils import slugerfield
 
 
@@ -48,8 +48,14 @@ class RecipeForm(forms.ModelForm):
                 if int(query_dict[volume]) <= 0:
                     raise forms.ValidationError('Количество ингредиентов '
                                                 'должно быть больше нуля')
+                elif value in ingredients_clean:
+                    raise forms.ValidationError('Один из ингредиентов был '
+                                                'добавлен больше одного раза')
+                elif not Ingredient.objects.filter(title=value).exists():
+                    raise forms.ValidationError('Выберите ингредиент из '
+                                                'выпадающего списка')
                 else:
-                    ingredients_clean.append(key)
+                    ingredients_clean.append(value)
         if len(ingredients_clean) == 0:
             raise forms.ValidationError('Добавьте ингредиент')
         return ingredients_clean
